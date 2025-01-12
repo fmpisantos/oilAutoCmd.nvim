@@ -40,7 +40,7 @@ M.setup = function(deleteArgs, moveArgs)
                 end
                 if action.type == "delete" then
                     local path = M.get_actual_path(action.url);
-                    if M.fileDeletePattern and #M.fileDeletePattern then
+                    if M.fileDeletePattern and #M.fileDeletePattern > 0 then
                         if file_matches_patterns(path, M.fileDeletePattern) then
                             M.fileDeleteCallback(path)
                         end
@@ -50,7 +50,7 @@ M.setup = function(deleteArgs, moveArgs)
                 elseif action.type == "move" then
                     local dest = M.get_actual_path(action.dest_url);
                     local src = M.get_actual_path(action.src_url);
-                    if M.fileMovePattern and #M.fileMovePattern then
+                    if M.fileMovePattern and #M.fileMovePattern > 0 then
                         if file_matches_patterns(dest, M.fileMovePattern) or file_matches_patterns(src, M.fileMovePattern) then
                             M.fileMoveCallback(src, dest)
                         end
