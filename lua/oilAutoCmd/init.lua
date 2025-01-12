@@ -23,11 +23,11 @@ M.setup = function(deleteArgs, moveArgs)
     M.fileDeleteCallback, M.fileDeletePattern = deleteArgs.func, deleteArgs.pattern
     M.fileMoveCallback, M.fileMovePattern = moveArgs.func, moveArgs.pattern
 
-    if M.fileDeletePattern then
+    if not M.fileDeletePattern then
         M.fileDeletePattern = {}
     end
 
-    if M.fileMovePattern then
+    if not M.fileMovePattern then
         M.fileMovePattern = {}
     end
 
