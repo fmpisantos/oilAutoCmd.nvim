@@ -19,13 +19,17 @@ M.get_actual_path = function(path)
     return path:gsub("file://", ""):gsub("oil://", "")
 end
 
-M.setup = function(fileDeleteCallback, fileMoveCallback, paths)
-    M.fileDeleteCallback = fileDeleteCallback
-    M.fileMoveCallback = fileMoveCallback
-    if not paths then
-        paths = {}
+M.setup = function(deleteArgs, moveArgs)
+    M.fileDeleteCallback, M.fileDeletePattern = deleteArgs.func, deleteArgs.pattern
+    M.fileMoveCallback, M.fileMovePattern = moveArgs.func, moveArgs.pattern
+
+    if M.fileDeletePattern then
+        M.fileDeletePattern = {}
     end
-    M.paths = paths
+
+    if M.fileMovePattern then
+        M.fileMovePattern = {}
+    end
 
     vim.api.nvim_create_autocmd("User", {
         pattern = "OilActionsPost",
@@ -36,8 +40,8 @@ M.setup = function(fileDeleteCallback, fileMoveCallback, paths)
                 end
                 if action.type == "delete" then
                     local path = M.get_actual_path(action.url);
-                    if M.paths and #M.paths then
-                        if file_matches_patterns(path, M.paths) then
+                    if M.fileDeletePattern and #M.fileDeletePattern then
+                        if file_matches_patterns(path, M.fileDeletePattern) then
                             M.fileDeleteCallback(path)
                         end
                     else
@@ -46,8 +50,8 @@ M.setup = function(fileDeleteCallback, fileMoveCallback, paths)
                 elseif action.type == "move" then
                     local dest = M.get_actual_path(action.dest_url);
                     local src = M.get_actual_path(action.src_url);
-                    if M.paths and #M.paths then
-                        if file_matches_patterns(dest, M.paths) or file_matches_patterns(src, M.paths) then
+                    if M.fileMovePattern and #M.fileMovePattern then
+                        if file_matches_patterns(dest, M.fileMovePattern) or file_matches_patterns(src, M.fileMovePattern) then
                             M.fileMoveCallback(src, dest)
                         end
                     else
