@@ -2,7 +2,6 @@ local M = {}
 
 local function file_matches_pattern(filepath, pattern)
     local matches = vim.fn.glob(pattern)
-    vim.print(string.format("Matching %s with %s (%s)", filepath, matches, tostring(vim.fn.match(filepath, matches))))
     return vim.fn.match(filepath, matches) ~= -1
 end
 
@@ -20,8 +19,8 @@ M.get_actual_path = function(path)
 end
 
 M.setup = function(deleteArgs, moveArgs)
-    M.fileDeleteCallback, M.fileDeletePattern = deleteArgs.func, deleteArgs.pattern
-    M.fileMoveCallback, M.fileMovePattern = moveArgs.func, moveArgs.pattern
+    M.fileDeleteCallback, M.fileDeletePattern              = deleteArgs.func, deleteArgs.pattern
+    M.fileMoveCallback, M.fileMovePattern, M.fileMoveOnEnd = moveArgs.func, moveArgs.pattern, moveArgs.on_end
 
     if not M.fileDeletePattern then
         M.fileDeletePattern = {}
@@ -34,6 +33,7 @@ M.setup = function(deleteArgs, moveArgs)
     vim.api.nvim_create_autocmd("User", {
         pattern = "OilActionsPost",
         callback = function(args)
+            local moved = false;
             for _, action in ipairs(args.data.actions) do
                 if action.entry_type ~= "file" then
                     goto continue
@@ -53,12 +53,17 @@ M.setup = function(deleteArgs, moveArgs)
                     if M.fileMovePattern and #M.fileMovePattern > 0 then
                         if file_matches_patterns(dest, M.fileMovePattern) or file_matches_patterns(src, M.fileMovePattern) then
                             M.fileMoveCallback(src, dest)
+                            moved = true;
                         end
                     else
                         M.fileMoveCallback(src, dest)
+                        moved = true;
                     end
                 end
                 ::continue::
+            end
+            if moved and M.fileMoveOnEnd then
+                M.fileMoveOnEnd()
             end
         end
     })
